@@ -97,17 +97,20 @@ export default () => {
         method: "POST",
       });
     },
+
     clearCart(id: string) {
       return useCustomFetch(`${resource}/carts/${id}/clear`, {
         method: "POST",
       });
     },
+
     createCartLink(payload: any) {
       return useCustomFetch(`${resource}/cartLinks`, {
         body: payload,
         method: "POST",
       });
     },
+
     getCartLink(id: string) {
       return useCustomFetch(`${resource}/cartLinks/${id}`, {
         method: "GET",

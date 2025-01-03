@@ -152,6 +152,9 @@ import {
   today,
 } from "@internationalized/date";
 import { toDate } from "radix-vue/date";
+import { cn, debounce } from "~/lib/utils";
+import type { IProduct } from "~/types/modules/marketPlaceModel";
+import { getMilliseconds, milliseconds, parse } from "date-fns";
 
 const props = defineProps({
   cartLinkId: {
@@ -162,9 +165,6 @@ const props = defineProps({
 
 const marketPlaceStore = useMarketPlaceStore();
 const { marketplaceLoadingStates } = storeToRefs(marketPlaceStore);
-import { cn, debounce } from "~/lib/utils";
-import type { IProduct } from "~/types/modules/marketPlaceModel";
-import { getMilliseconds, milliseconds, parse } from "date-fns";
 const { $moment } = useNuxtApp();
 
 const { checkoutCartLink } = marketPlaceStore;
@@ -208,7 +208,7 @@ const formSchema = toTypedSchema(
 
 const { handleSubmit, setFieldValue, resetForm } = useForm({
   validationSchema: formSchema,
-  initialValues: { discount: 1, dropoffNote: "Drop in front of my house" },
+  initialValues: { discount: 0, dropoffNote: "Drop in front of my house" },
 });
 
 const emits = defineEmits(["completed"]);
@@ -223,9 +223,12 @@ const onSubmit = handleSubmit(async (values: any) => {
     to: {
       coords: [location.value?.latitude, location.value?.longitude],
       location: location.value?.name,
-      description: location.value?.city,
+      description:
+        location.value?.city !== ""
+          ? location.value.city
+          : location.value?.name,
     },
-    discount: 1,
+    discount: 0,
     cartLinkId: props.cartLinkId,
     payment: "cash",
     time: new Date(values.time).getTime() + values.deliveryTime,

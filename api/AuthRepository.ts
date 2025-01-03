@@ -53,6 +53,7 @@ export default () => {
         body: payload,
       });
     },
+
     exchangeToken() {
       const refreshToken = useCookie("refreshToken");
       let authToken = "" as any;
@@ -68,6 +69,7 @@ export default () => {
         },
       });
     },
+
     updatePassword(payload: any) {
       return useCustomFetch(`${resource}/passwords/update`, {
         method: "POST",

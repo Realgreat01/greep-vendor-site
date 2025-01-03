@@ -1,6 +1,6 @@
 <template>
   <div
-    class="relative z-50 mt-4 grid max-h-[78vh] gap-4 overflow-y-scroll text-gray-600"
+    class="relative z-50 mt-4 grid max-h-[78vh] gap-4 overflow-y-scroll p-2 text-gray-600"
   >
     <form class="space-y-8" @submit="onSubmit">
       <div class="grid gap-4">
@@ -16,7 +16,8 @@
                   type="text"
                   placeholder="Lagos"
                   class="text-sm"
-                  v-bind="componentField"
+                 v-bind="componentField"
+                  v-model="location"
                 />
               </FormControl>
               <FormMessage />
@@ -24,16 +25,75 @@
           </FormField>
         </div>
 
+        <div class="flex gap-[20px]">
+          <FormField v-slot="{ field, value }" name="time">
+            <FormItem class="flex grow flex-col">
+              <FormLabel class="mb-[10px]">Delivery date</FormLabel>
+              <Popover>
+                <PopoverTrigger as-child>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      :class="
+                        cn(
+                          'w-full grow justify-start text-left font-normal',
+                          !value && 'text-muted-foreground',
+                        )
+                      "
+                    >
+                      <CalendarIcon class="mr-2 h-4 w-4 opacity-50" />
+                      <span>{{
+                        value ? gpDates.formatDate(dateValue) : "Pick a date"
+                      }}</span>
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent class="p-0">
+                  <Calendar
+                    v-model:placeholder="placeholder"
+                    v-model="dateValue"
+                    calendar-label="Delivery Date"
+                    initial-focus
+                    :min-value="today(getLocalTimeZone())"
+                    @update:model-value="
+                      (v) => {
+                        if (v) {
+                          dateValue = v;
+                          setFieldValue('time', toDate(v).toISOString());
+                        } else {
+                          dateValue = undefined;
+                          setFieldValue('time', undefined);
+                        }
+                      }
+                    "
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+            <input type="hidden" v-bind="field" />
+          </FormField>
+          <FormField v-slot="{ componentField }" name="deliveryTime">
+            <FormItem class="grow">
+              <FormLabel>Time </FormLabel>
+              <FormControl>
+                <TimePicker
+                  type="text"
+                  placeholder="12:00"
+                  class="w-full"
+                  v-bind="componentField"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+        </div>
         <div class="grid gap-2">
           <Label
             >Select Items <span class="text-[#FF5656]">Required</span></Label
           >
-          <div
-            v-for="(cartItem, index) in productsArray"
-            :key="index"
-            class="mb-3"
-          >
-            <div class="mb-3 flex items-center gap-2 lg:gap-[20px]">
+          <div v-for="(cartItem, index) in productsArray" :key="index" class="">
+            <div class="flex items-center gap-2 lg:gap-[20px]">
               <div>
                 <div class="min-h-1 min-w-1 rounded-full bg-[#000]"></div>
               </div>
@@ -87,7 +147,7 @@
                           "
                         >
                           <h2
-                            class="mb-2 flex w-full items-center justify-between border-b"
+                            class="mb-2 flex w-full items-center justify-between border-b text-xs"
                           >
                             <span class="block">{{ product.label }} </span>
                             <span
@@ -268,11 +328,22 @@
         </div>
         <div
           @click="addNewProduct"
-          class="flex max-w-[190px] cursor-pointer items-center rounded-[6px]"
+          class="flex max-w-[190px] cursor-pointer items-center rounded-[6px] text-sm"
         >
-          <CirclePlus class="mr-[6px] h-[20px] w-[20px]" /> Add another item
+          <CirclePlus class="mr-[6px] h-5 w-5" /> Add another item
         </div>
-
+        <FormField v-slot="{ componentField }" name="dropoffNote">
+          <FormItem>
+            <FormLabel>Drop off note </FormLabel>
+            <FormControl>
+              <Textarea placeholder="Type note" v-bind="componentField" />
+            </FormControl>
+            <!-- <FormDescription>
+                      This is your public display name.
+                    </FormDescription> -->
+            <FormMessage />
+          </FormItem>
+        </FormField>
         <div class="mt-4 flex items-center justify-end">
           <Button
             variant="ghost"
@@ -291,7 +362,7 @@
             "
             @click="onSubmit"
           >
-            Submit Item
+            Create Order
           </Button>
         </div>
       </div>
@@ -330,6 +401,10 @@ import {
   today,
 } from "@internationalized/date";
 import { toDate } from "radix-vue/date";
+import { cn, debounce } from "~/lib/utils";
+import type { AddOnMapItem, IProduct } from "~/types/modules/marketPlaceModel";
+import { TrashIcon } from "@placetopay/iconsax-vue/outline";
+const { $moment } = useNuxtApp();
 
 const props = defineProps({
   vendorType: {
@@ -340,19 +415,8 @@ const props = defineProps({
 const marketPlaceStore = useMarketPlaceStore();
 const { marketplaceLoadingStates, products, currentCart } =
   storeToRefs(marketPlaceStore);
-import { cn, debounce } from "~/lib/utils";
-import type { AddOnMapItem, IProduct } from "~/types/modules/marketPlaceModel";
-import { TrashIcon } from "@placetopay/iconsax-vue/outline";
-const { $moment } = useNuxtApp();
 
-const {
-  createProduct,
-  clearCart,
-  createOrder,
-  createCartLink,
-  searchVendorProducts,
-  addToCart,
-} = marketPlaceStore;
+const { createCartLink, searchVendorProducts, addToCart } = marketPlaceStore;
 
 const emits = defineEmits(["completed", "close"]);
 
@@ -366,10 +430,21 @@ type AddOn = {
     currency: string;
   };
 };
+interface Location {
+  name: string;
+  city: string;
+  state: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+}
 
 const link = ref("");
 const searchTerm = ref("");
 const savedIndex = ref(-1);
+const location = ref<Location>();
+const placeholder = ref();
+const dateValue = ref();
 
 const df = new DateFormatter("en-US", {
   dateStyle: "long",
@@ -428,32 +503,29 @@ const filteredProducts = computed(() =>
       !productsArray.value.some((item) => product.value === item.productId),
   ),
 );
-
 const formSchema = toTypedSchema(
   z.object({
-    // to: z.string({
-    //   required_error: "Address cannot be empty",
-    // }),
-    // discount: z.number({
-    //   required_error: "Discount cannot be empty",
-    // }),
-    // dropoffNote: z.string().optional(),
-    // deliveryTime: z.string({
-    //   required_error: "Delivey time is required",
-    // }),
-    // time: z
-    //   .string()
-    //   .datetime()
-    //   .optional()
-    //   .refine((date: any) => date !== undefined, "Please select a valid date."),
+    to: z.any({
+      required_error: "Address cannot be empty",
+    }),
+    discount: z.number({
+      required_error: "Discount cannot be empty",
+    }),
+    dropoffNote: z.string().optional(),
+    deliveryTime: z.number({
+      required_error: "Delivey time is required",
+    }),
+    time: z
+      .string()
+      .datetime()
+      .optional()
+      .refine((date: any) => date !== undefined, "Please select a valid date."),
   }),
 );
 
-const { handleSubmit, setFieldValue, resetForm, isSubmitting } = useForm({
+const { handleSubmit, setFieldValue, resetForm } = useForm({
   validationSchema: formSchema,
-  initialValues: {
-    to: "",
-  },
+  initialValues: { discount: 0, dropoffNote: "Drop in front of my house" },
 });
 
 const searchProducts = debounce(async (value: any) => {
@@ -568,15 +640,30 @@ const onSubmit = handleSubmit(async (values: any) => {
         .filter((product) => product.id !== ""),
     ],
   };
+  const cartProperty = {
+    ...values,
+    to: {
+      coords: [location.value?.latitude, location.value?.longitude],
+      location: location.value?.name,
+      description:
+        location.value?.city !== ""
+          ? location.value?.city
+          : location.value?.name,
+    },
+    discount: 0,
+    payment: "cash",
+    time: new Date(values.time).getTime() + values.deliveryTime,
+  };
 
-  const paymentLink = await createCartLink(payload);
+  const paymentLink = await createCartLink(payload, cartProperty);
 
   if (
     marketPlaceStore.marketplaceLoadingStates.createCartLink ===
     API_STATES.SUCCESS
   ) {
     if (typeof paymentLink === "string") link.value = paymentLink;
-    openCopyOrderModal();
+    // openCopyOrderModal();
+
   }
 });
 

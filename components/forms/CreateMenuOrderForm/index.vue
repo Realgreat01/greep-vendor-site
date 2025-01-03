@@ -16,6 +16,71 @@
                   type="text"
                   placeholder="Lagos"
                   class="focus:ring-none text-sm"
+                 v-bind="componentField"
+                  v-model="location"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+        </div>
+
+        <div class="flex gap-[20px]">
+          <FormField v-slot="{ field, value }" name="time">
+            <FormItem class="flex grow flex-col">
+              <FormLabel class="mb-[10px]">Delivery date</FormLabel>
+              <Popover>
+                <PopoverTrigger as-child>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      :class="
+                        cn(
+                          'w-full grow justify-start text-left font-normal',
+                          !value && 'text-muted-foreground',
+                        )
+                      "
+                    >
+                      <CalendarIcon class="mr-2 h-4 w-4 opacity-50" />
+                      <span>{{
+                        value ? gpDates.formatDate(dateValue) : "Pick a date"
+                      }}</span>
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent class="p-0">
+                  <Calendar
+                    v-model:placeholder="placeholder"
+                    v-model="dateValue"
+                    calendar-label="Delivery Date"
+                    initial-focus
+                    :min-value="today(getLocalTimeZone())"
+                    @update:model-value="
+                      (v) => {
+                        if (v) {
+                          dateValue = v;
+                          setFieldValue('time', toDate(v).toISOString());
+                        } else {
+                          dateValue = undefined;
+                          setFieldValue('time', undefined);
+                        }
+                      }
+                    "
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+            <input type="hidden" v-bind="field" />
+          </FormField>
+          <FormField v-slot="{ componentField }" name="deliveryTime">
+            <FormItem class="grow">
+              <FormLabel>Time </FormLabel>
+              <FormControl>
+                <TimePicker
+                  type="text"
+                  placeholder="12:00"
+                  class="w-full"
                   v-bind="componentField"
                 />
               </FormControl>
@@ -273,6 +338,19 @@
           <CirclePlus class="mr-[6px] h-[20px] w-[20px]" /> Add another item
         </div>
 
+        <FormField v-slot="{ componentField }" name="dropoffNote">
+          <FormItem>
+            <FormLabel>Drop off note </FormLabel>
+            <FormControl>
+              <Textarea placeholder="Type note" v-bind="componentField" />
+            </FormControl>
+            <!-- <FormDescription>
+                      This is your public display name.
+                    </FormDescription> -->
+            <FormMessage />
+          </FormItem>
+        </FormField>
+
         <div class="mt-4 flex items-center justify-end">
           <Button
             variant="ghost"
@@ -339,14 +417,7 @@ import type { AddOnMapItem, IProduct } from "~/types/modules/marketPlaceModel";
 import { TrashIcon } from "@placetopay/iconsax-vue/outline";
 const { $moment } = useNuxtApp();
 
-const {
-  createProduct,
-  clearCart,
-  createOrder,
-  createCartLink,
-  searchVendorProducts,
-  addToCart,
-} = marketPlaceStore;
+const { createCartLink, searchVendorProducts, addToCart } = marketPlaceStore;
 
 const emits = defineEmits(["completed", "close"]);
 
@@ -361,9 +432,21 @@ type AddOn = {
   };
 };
 
+interface Location {
+  name: string;
+  city: string;
+  state: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+}
+
 const link = ref("");
 const searchTerm = ref("");
 const savedIndex = ref(-1);
+const location = ref<Location>();
+const placeholder = ref();
+const dateValue = ref();
 
 const df = new DateFormatter("en-US", {
   dateStyle: "long",
@@ -420,31 +503,31 @@ const filteredProducts = computed(() =>
   ),
 );
 
+
+
 const formSchema = toTypedSchema(
   z.object({
-    // to: z.string({
-    //   required_error: "Address cannot be empty",
-    // }),
-    // discount: z.number({
-    //   required_error: "Discount cannot be empty",
-    // }),
-    // dropoffNote: z.string().optional(),
-    // deliveryTime: z.string({
-    //   required_error: "Delivey time is required",
-    // }),
-    // time: z
-    //   .string()
-    //   .datetime()
-    //   .optional()
-    //   .refine((date: any) => date !== undefined, "Please select a valid date."),
+    to: z.any({
+      required_error: "Address cannot be empty",
+    }),
+    discount: z.number({
+      required_error: "Discount cannot be empty",
+    }),
+    dropoffNote: z.string().optional(),
+    deliveryTime: z.number({
+      required_error: "Delivey time is required",
+    }),
+    time: z
+      .string()
+      .datetime()
+      .optional()
+      .refine((date: any) => date !== undefined, "Please select a valid date."),
   }),
 );
 
-const { handleSubmit, setFieldValue, resetForm, isSubmitting } = useForm({
+const { handleSubmit, setFieldValue, resetForm } = useForm({
   validationSchema: formSchema,
-  initialValues: {
-    to: "",
-  },
+  initialValues: { discount: 0, dropoffNote: "Drop in front of my house" },
 });
 
 const searchProducts = debounce(async (value: any) => {
@@ -557,15 +640,28 @@ const onSubmit = handleSubmit(async (values: any) => {
       }),
     ],
   };
+  const cartProperty = {
+  ...values,
+    to: {
+      coords: [location.value?.latitude, location.value?.longitude],
+      location: location.value?.name,
+      description:
+        location.value?.city !== ""
+          ? location.value?.city
+          : location.value?.name,
+    },
+    discount: 0,
+    payment: "cash",
+    time: new Date(values.time).getTime() + values.deliveryTime,
+  };
 
-  const paymentLink = await createCartLink(payload);
-
+  const paymentLink = await createCartLink(payload, cartProperty);
   if (
     marketPlaceStore.marketplaceLoadingStates.createCartLink ===
     API_STATES.SUCCESS
   ) {
     if (typeof paymentLink === "string") link.value = paymentLink;
-    openCopyOrderModal();
+    // openCopyOrderModal();
   }
 });
 

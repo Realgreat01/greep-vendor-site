@@ -573,7 +573,7 @@ export const useMarketPlaceStore = defineStore(
       }
     };
 
-    const createCartLink = async (payload: any) => {
+    const createCartLink = async (payload: any, cartProperty: any) => {
       const { $api } = useNuxtApp();
       const { toast } = useToast();
       const router = useRouter();
@@ -595,13 +595,19 @@ export const useMarketPlaceStore = defineStore(
           source: cartLink,
         });
 
+        const { data: cartData, error: cartError } =
+          await $api.marketplace.checkoutCartLink({
+            ...cartProperty,
+            cartLinkId: data.value.id,
+          });
+
         if (isSupported) {
           copy(cartLink);
-          toast({
-            title: "Order created successfully",
-            description:
-              "Order created successfully with link copied to clipboard!",
-          });
+          // toast({
+          //   title: "Order created successfully",
+          //   description:
+          //     "Order created successfully with link copied to clipboard!",
+          // });
         } else {
           toast({
             title: "Success",

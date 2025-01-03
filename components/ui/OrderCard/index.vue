@@ -34,7 +34,7 @@
 
       <div class="mt-4 flex items-center gap-2">
         <img
-          :src="order.users[order.userId].bio.photo.link"
+          :src="order.users[order.userId]?.bio?.photo?.link"
           alt=""
           class="h-10 w-10 rounded-[50%]"
         />
