@@ -16,7 +16,7 @@
                   type="text"
                   placeholder="Lagos"
                   class="text-sm"
-                 v-bind="componentField"
+                  v-bind="componentField"
                   v-model="location"
                 />
               </FormControl>
@@ -103,7 +103,7 @@
                     variant="outline"
                     role="combobox"
                     :aria-expanded="cartItem.open"
-                    class="flex-1 justify-between lg:w-full"
+                    class="mb-2 flex-1 justify-between lg:w-full"
                   >
                     {{
                       cartItem.productId
@@ -661,9 +661,9 @@ const onSubmit = handleSubmit(async (values: any) => {
     marketPlaceStore.marketplaceLoadingStates.createCartLink ===
     API_STATES.SUCCESS
   ) {
-    if (typeof paymentLink === "string") link.value = paymentLink;
+    closeModal();
+    // if (typeof paymentLink === "string") link.value = paymentLink;
     // openCopyOrderModal();
-
   }
 });
 

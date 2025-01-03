@@ -16,7 +16,7 @@
                   type="text"
                   placeholder="Lagos"
                   class="focus:ring-none text-sm"
-                 v-bind="componentField"
+                  v-bind="componentField"
                   v-model="location"
                 />
               </FormControl>
@@ -117,7 +117,9 @@
                           )?.label
                         : "Select product..."
                     }}
-                    <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown
+                      class="mb-2 ml-2 h-4 w-4 shrink-0 opacity-50"
+                    />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent class="z-[9999] w-[200px] !bg-primary p-0">
@@ -503,8 +505,6 @@ const filteredProducts = computed(() =>
   ),
 );
 
-
-
 const formSchema = toTypedSchema(
   z.object({
     to: z.any({
@@ -641,7 +641,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     ],
   };
   const cartProperty = {
-  ...values,
+    ...values,
     to: {
       coords: [location.value?.latitude, location.value?.longitude],
       location: location.value?.name,
@@ -660,7 +660,8 @@ const onSubmit = handleSubmit(async (values: any) => {
     marketPlaceStore.marketplaceLoadingStates.createCartLink ===
     API_STATES.SUCCESS
   ) {
-    if (typeof paymentLink === "string") link.value = paymentLink;
+    closeModal();
+    // if (typeof paymentLink === "string") link.value = paymentLink;
     // openCopyOrderModal();
   }
 });

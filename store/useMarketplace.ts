@@ -506,10 +506,10 @@ export const useMarketPlaceStore = defineStore(
       }
       if (data.value) {
         console.log(data.value);
-        toast({
-          title: "Success",
-          description: "Order updated successfully",
-        });
+        // toast({
+        //   title: "Success",
+        //   description: "Order updated successfully",
+        // });
         singleOrder.value = data.value;
         await getVendorOrders();
         marketplaceLoadingStates.value.rejectOrAcceptOrder = API_STATES.SUCCESS;
@@ -595,11 +595,23 @@ export const useMarketPlaceStore = defineStore(
           source: cartLink,
         });
 
-        const { data: cartData, error: cartError } =
+        const { data: orderData, error: cartError } =
           await $api.marketplace.checkoutCartLink({
             ...cartProperty,
             cartLinkId: data.value.id,
           });
+        if (orderData.value) {
+          console.log({ cartData: orderData.value });
+
+          await rejectOrAcceptOrder(orderData.value.id, {
+            accepted: true,
+            message: "Order Accepted",
+          });
+          toast({
+            title: "Success",
+            description: "Order created successfully",
+          });
+        }
 
         if (isSupported) {
           copy(cartLink);
