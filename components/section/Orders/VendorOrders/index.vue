@@ -92,7 +92,7 @@
       </div>
     </div>
     <client-only>
-      <CreateOrderModal
+      <CreateRideModal
         vendorType="vendorItems"
         v-if="isDialogOpen"
         @close="isDialogOpen = false"

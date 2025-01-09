@@ -1,21 +1,26 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
+
   app: {
     head: {
       link: [{ rel: "icon", type: "image/svg", href: "/greep.svg" }],
     },
   },
+
   ssr: false,
   spaLoadingTemplate: true,
+
   modules: [
     "@nuxtjs/tailwindcss",
     "shadcn-nuxt",
     "@pinia/nuxt",
     "@pinia-plugin-persistedstate/nuxt",
   ],
+
   // css: [],
   buildModules: ["@nuxtjs/moment"],
+
   runtimeConfig: {
     public: {
       baseURL: process.env.BASE_URL,
@@ -40,12 +45,14 @@ export default defineNuxtConfig({
      */
     componentDir: "./components/library",
   },
+
   components: [
     {
       path: "~/components",
       pathPrefix: false,
     },
   ],
+
   // loadingIndicator: {
   //   name: "circle",
   //   color: "purple",
@@ -55,4 +62,6 @@ export default defineNuxtConfig({
     "/vendor": { ssr: false },
     "/vendor/orders": { ssr: false },
   },
+
+  compatibilityDate: "2025-01-08",
 });

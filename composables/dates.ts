@@ -19,4 +19,8 @@ export const gpDates = {
   getFormattedDate(date: string | Date) {
     return format(date, "hh:mm a");
   },
+
+  formatDateTime(date: string | Date) {
+    return format(date, "MMM dd yyyy, hh:mm:ss a");
+  },
 };

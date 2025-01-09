@@ -14,7 +14,7 @@
           >
             <div
               v-if="showModal"
-              class="hide-scrollbar relative max-h-screen w-[96vw] rounded-lg bg-white px-4 pb-4 md:justify-normal md:rounded-lg md:px-4 lg:min-w-[40%] lg:max-w-[50%]"
+              class="hide-scrollbar relative max-h-[90vh] w-[96vw] overflow-auto rounded-lg bg-white px-4 pb-4 md:justify-normal md:rounded-lg md:px-4 lg:min-w-[40%] lg:max-w-[50%]"
               :class="class"
             >
               <div

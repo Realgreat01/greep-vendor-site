@@ -15,7 +15,7 @@
       <div class="flex items-center gap-1 text-sm">
         <img src="/images/orders/location.png" alt="" class="block h-4 w-4" />
         <span class="text-[#616161]">Location : </span>
-        <h2 class="">{{ order.to.location }}</h2>
+        <h2 class="">{{ gpHelpers.sliceWords(order.to.location, 20) }}</h2>
       </div>
       <div class="flex items-center gap-1 text-sm">
         <img src="/images/orders/cash.png" alt="" class="block h-4 w-4" />

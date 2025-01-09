@@ -1,13 +1,13 @@
 <template>
   <div>
     <form class="p-4 text-black" v-if="!confirmCreateCategoryTag">
-      <h2>
+      <div>
         <h2 class="text-lg font-semibold">Create New Category</h2>
         <X
           @click="emit('close')"
           class="2-4 absolute right-4 top-4 h-4 cursor-pointer rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
         />
-      </h2>
+      </div>
       <div class="grid gap-2">
         <FormField v-slot="{ componentField }" name="description">
           <FormItem>

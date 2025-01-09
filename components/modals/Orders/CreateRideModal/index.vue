@@ -1,6 +1,6 @@
 <template>
-  <CustomModal title="Create Order" @close="emit('completed')">
-    <CreateOrderForm :vendorType @completed="$emit('completed')" />
+  <CustomModal title="Book Ride" @close="emit('completed')">
+    <CreateRideOrderForm :vendorType @completed="emit('completed')" />
   </CustomModal>
 </template>
 
